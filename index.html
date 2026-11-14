@@ -4,130 +4,534 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ask the Potato</title>
+<meta name="description" content="A completely unhinged, extremely supportive potato that cares about your mental health.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥔</text></svg>">
 <style>
   :root {
-    --bg: #fff6e0;
-    --ink: #3b2a1a;
-    --accent: #e0662b;
-    --card: #ffffff;
-    --muted: #8a7560;
+    --ink: #2a1a3a;
+    --muted: #5e4c70;
+    --card: #fffdf7;
+    --accent: #ff3d9a;
+    --accent2: #7b5cff;
+    --line: #2a1a3a;
+    --bg: linear-gradient(120deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb, #d4fc79, #fbc2eb);
+    --calm-bg: #e6efe9;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #1f1812; --ink: #f6e7d2; --accent: #ff8a4c; --card: #2c2219; --muted: #b8a088; }
+    :root:not([data-theme="light"]) {
+      --ink: #f5ecff; --muted: #c4b3d8; --card: #2a2235;
+      --bg: linear-gradient(120deg, #4a1c4a, #1c2a5a, #13404a, #3a3a12, #5a1c3a);
+      --calm-bg: #1b2421;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #f5ecff; --muted: #c4b3d8; --card: #2a2235;
+    --bg: linear-gradient(120deg, #4a1c4a, #1c2a5a, #13404a, #3a3a12, #5a1c3a);
+    --calm-bg: #1b2421;
   }
   * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
   body {
-    margin: 0; min-height: 100vh; display: grid; place-items: center;
-    background: var(--bg); color: var(--ink);
+    margin: 0; min-height: 100vh; padding: 16px;
+    color: var(--ink);
     font-family: "Comic Sans MS", "Chalkboard SE", "Comic Neue", system-ui, sans-serif;
-    padding: 16px; overflow-x: hidden;
+    background: var(--bg); background-size: 400% 400%;
+    animation: bg 12s ease infinite;
   }
-  main { width: 100%; max-width: 480px; text-align: center; }
-  h1 { font-size: 2.2rem; margin: 0 0 4px; }
-  .sub { color: var(--muted); margin: 0 0 24px; }
-  #potato {
-    font-size: 8rem; line-height: 1; cursor: pointer; user-select: none;
-    display: inline-block; transition: transform .2s;
-    background: none; border: 0; padding: 0;
+  body.calm { animation: none; background: var(--calm-bg); }
+  @keyframes bg { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  body.shake { animation: bg 12s ease infinite, shake .4s; }
+  @keyframes shake {
+    20% { transform: translate(-8px, 4px) rotate(-1deg); } 40% { transform: translate(8px, -4px) rotate(1deg); }
+    60% { transform: translate(-6px, -2px); } 80% { transform: translate(6px, 2px); }
   }
-  #potato:hover { transform: rotate(-8deg) scale(1.05); }
-  .thinking { animation: wobble .15s infinite alternate; }
-  @keyframes wobble { from { transform: rotate(-15deg); } to { transform: rotate(15deg) scale(1.1); } }
+
+  /* background chaos */
+  .floater { position: fixed; pointer-events: none; opacity: .55; animation: drift ease-in-out infinite alternate; z-index: 0; }
+  @keyframes drift { from { transform: translateY(0) rotate(-20deg); } to { transform: translateY(-60px) rotate(25deg); } }
+  body.calm .floater { display: none; }
+
+  main { position: relative; z-index: 1; width: 100%; max-width: 560px; margin: 0 auto; text-align: center; }
+  .toolbar { display: flex; justify-content: flex-end; gap: 8px; }
+  .toolbar button {
+    font: inherit; font-size: .85rem; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 2px solid var(--line); background: var(--card); color: var(--ink);
+  }
+  h1 {
+    font-size: clamp(2.2rem, 9vw, 3.4rem); margin: 8px 0 0; line-height: 1;
+    background: linear-gradient(90deg, #ff3d9a, #ff9a3d, #ffd23d, #3dd68c, #3d9aff, #9a3dff, #ff3d9a);
+    background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: rainbow 3s linear infinite; transform: rotate(-2deg);
+  }
+  body.calm h1 { animation: none; }
+  @keyframes rainbow { to { background-position: 200% center; } }
+  .sub { color: var(--muted); margin: 8px 0 12px; }
+
+  /* the spud */
+  .spud-wrap { display: inline-block; margin: 10px 0 0; cursor: pointer; transition: transform .2s; }
+  .spud-wrap:hover { transform: rotate(-6deg) scale(1.04); }
+  .spud-wrap.spin { animation: spin .7s ease; }
+  .spud-wrap.bounce { animation: bounce .6s ease; }
+  .spud-wrap.wobble { animation: wobble .15s infinite alternate; }
+  @keyframes spin { to { transform: rotate(360deg) scale(1.1); } }
+  @keyframes bounce { 30% { transform: translateY(-40px) scaleY(1.1); } 60% { transform: translateY(0) scaleY(.85); } }
+  @keyframes wobble { from { transform: rotate(-12deg); } to { transform: rotate(12deg) scale(1.08); } }
+  .spud {
+    position: relative; width: 200px; height: 160px; margin: 0 auto;
+    background: radial-gradient(circle at 35% 30%, #f3cd8c, #d9a45b 55%, #a8712f);
+    border-radius: 52% 48% 45% 55% / 60% 55% 45% 40%;
+    box-shadow: inset -12px -14px 0 rgba(0,0,0,.12), 0 12px 0 rgba(0,0,0,.15);
+    transition: transform 4s ease-in-out;
+  }
+  .spot { position: absolute; width: 10px; height: 7px; border-radius: 50%; background: #9a6a30; opacity: .7; }
+  .s1 { top: 22px; left: 34px; } .s2 { top: 120px; left: 150px; } .s3 { top: 30px; left: 160px; width: 7px; }
+  .eye { position: absolute; top: 40px; width: 46px; height: 46px; background: #fff; border: 3px solid var(--line); border-radius: 50%; }
+  .eye.l { left: 46px; } .eye.r { right: 46px; }
+  .pupil { position: absolute; top: 12px; left: 12px; width: 18px; height: 18px; background: #1a1020; border-radius: 50%; transition: transform .05s; }
+  .pupil::after { content: ""; position: absolute; top: 3px; left: 4px; width: 5px; height: 5px; background: #fff; border-radius: 50%; }
+  .blush { position: absolute; top: 92px; width: 26px; height: 12px; background: #ff7aa8; border-radius: 50%; opacity: .6; }
+  .blush.l { left: 26px; } .blush.r { right: 26px; }
+  .mouth {
+    position: absolute; left: 50%; top: 98px; width: 54px; height: 26px; transform: translateX(-50%);
+    border: 4px solid var(--line); border-top: 0; border-radius: 0 0 60px 60px; transition: all .3s;
+  }
+  .spud[data-face="big"] .mouth { height: 36px; width: 64px; background: #7a1f3d; }
+  .spud[data-face="sad"] .mouth { top: 110px; height: 18px; border-top: 4px solid var(--line); border-bottom: 0; border-radius: 60px 60px 0 0; }
+  .spud[data-face="wow"] .mouth { width: 26px; height: 30px; border: 4px solid var(--line); border-radius: 50%; background: #7a1f3d; }
+  .spud[data-face="flat"] .mouth { height: 0; border-left: 0; border-right: 0; border-radius: 0; top: 108px; }
+
   .bubble {
-    background: var(--card); border-radius: 20px; padding: 16px 20px; margin: 16px 0;
-    min-height: 60px; font-size: 1.25rem; box-shadow: 0 4px 0 rgba(0,0,0,.12);
-    display: flex; align-items: center; justify-content: center;
+    position: relative; background: var(--card); border: 3px solid var(--line); border-radius: 22px;
+    padding: 14px 18px; margin: 18px 0 14px; min-height: 64px; font-size: 1.15rem;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 0 var(--line);
   }
-  form { display: flex; gap: 8px; }
+  .bubble::before {
+    content: ""; position: absolute; top: -14px; left: 50%; transform: translateX(-50%) rotate(45deg);
+    width: 20px; height: 20px; background: var(--card); border-left: 3px solid var(--line); border-top: 3px solid var(--line);
+  }
+  .bubble.pop { animation: pop .35s ease; }
+  @keyframes pop { 50% { transform: scale(1.06) rotate(-1deg); } }
+
+  /* tabs */
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; }
+  .tabs button {
+    font: inherit; font-size: .95rem; padding: 8px 12px; border-radius: 14px; cursor: pointer;
+    border: 3px solid var(--line); background: var(--card); color: var(--ink);
+  }
+  .tabs button[aria-selected="true"] { background: var(--accent2); color: #fff; transform: rotate(-3deg) scale(1.05); }
+  .panel { background: var(--card); border: 3px solid var(--line); border-radius: 22px; padding: 16px; box-shadow: 0 5px 0 var(--line); }
+  .panel[hidden] { display: none; }
+  .panel p { margin: 0 0 12px; color: var(--muted); }
+  .row { display: flex; gap: 8px; }
   input {
     flex: 1; min-width: 0; padding: 12px 14px; font: inherit; font-size: 1rem;
-    border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink);
+    border: 3px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink);
   }
-  button.ask {
-    padding: 12px 18px; font: inherit; font-weight: bold; font-size: 1rem;
-    border: 3px solid var(--ink); border-radius: 14px; background: var(--accent); color: #fff;
-    cursor: pointer; box-shadow: 0 4px 0 var(--ink);
+  .go {
+    padding: 12px 18px; font: inherit; font-weight: bold; font-size: 1rem; white-space: nowrap;
+    border: 3px solid var(--line); border-radius: 14px; background: var(--accent); color: #fff;
+    cursor: pointer; box-shadow: 0 4px 0 var(--line);
   }
-  button.ask:active { transform: translateY(4px); box-shadow: none; }
-  .count { color: var(--muted); font-size: .9rem; margin-top: 20px; }
-  .fry { position: fixed; top: -40px; font-size: 2rem; pointer-events: none; animation: fall linear forwards; }
-  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  .go:active { transform: translateY(4px); box-shadow: none; }
+  .go.huge { width: 100%; font-size: 1.4rem; padding: 18px; background: linear-gradient(90deg, #ff3d9a, #ff9a3d, #7b5cff); }
+  .moods { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+  .moods button {
+    font: inherit; padding: 10px 4px; border-radius: 14px; cursor: pointer;
+    border: 3px solid var(--line); background: var(--card); color: var(--ink); font-size: .85rem;
+  }
+  .moods button span { display: block; font-size: 2rem; }
+  .moods button:hover { transform: scale(1.08) rotate(3deg); }
+  .stage { min-height: 2em; margin-top: 12px; font-size: 1.3rem; font-weight: bold; word-break: break-word; }
+  .stage span { display: inline-block; transition: transform 1.1s cubic-bezier(.2,.8,.3,1), opacity 1.1s; white-space: pre; }
+  .breath-label { font-size: 1.4rem; font-weight: bold; margin-bottom: 12px; min-height: 1.5em; color: var(--ink) !important; }
+
+  .confetti { position: fixed; top: -40px; z-index: 50; pointer-events: none; font-size: 1.6rem; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translate(var(--dx), 110vh) rotate(var(--rot)); } }
+  #hype {
+    position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px;
+    background: rgba(20, 0, 40, .55); cursor: pointer;
+  }
+  #hype[hidden] { display: none; }
+  #hype div {
+    max-width: 640px; text-align: center; color: #fff; font-size: clamp(1.7rem, 6vw, 3rem); font-weight: bold;
+    text-shadow: 3px 3px 0 #ff3d9a, -3px -3px 0 #7b5cff; animation: zoom .5s cubic-bezier(.2,1.6,.4,1);
+  }
+  @keyframes zoom { from { transform: scale(0) rotate(-20deg); } }
+
+  footer { margin: 22px 0 8px; font-size: .85rem; color: var(--muted); line-height: 1.5; }
+  footer a { color: inherit; font-weight: bold; }
+  .count { margin-top: 10px; font-size: .85rem; color: var(--muted); }
+
+  body.calm .spud-wrap, body.calm .spud-wrap:hover { animation: none !important; transform: none; }
+  body.calm .tabs button[aria-selected="true"] { transform: none; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Ask the Potato</h1>
-  <p class="sub">The ancient spud knows all. Ask it a yes or no question.</p>
-  <button id="potato" aria-label="Poke the potato">🥔</button>
-  <div class="bubble" id="answer">...</div>
-  <form id="form">
-    <input id="q" placeholder="Will I have a good day?" autocomplete="off" aria-label="Your question">
-    <button class="ask" type="submit">Ask!</button>
-  </form>
-  <p class="count" id="count"></p>
-</main>
-<script>
-  const answers = [
-    "Yes, but only on Tuesdays.",
-    "The potato says... absolutely.",
-    "No. The potato has spoken.",
-    "Ask again after a snack.",
-    "My eyes see a YES. I have many eyes.",
-    "Hmm. That's a tater-tot level question. Maybe.",
-    "Mashed signals. Try again.",
-    "Definitely! Go forth, little bean.",
-    "Not a chance, french fry.",
-    "The soil whispers... it depends.",
-    "Spudtacularly yes!",
-    "I'm just a potato. But also: no.",
-    "Signs point to curly fries.",
-    "Only if you do a little dance first.",
-    "Yes, and you should tell a duck about it.",
-    "The answer is hidden in a baked potato. Go look.",
-  ];
-  const pokes = ["Hey!", "Ow, my skin!", "I'm not a stress ball.", "Stop that, I'm sprouting.", "Rude.", "*potato noises*"];
+  <div class="toolbar">
+    <button id="soundBtn" type="button">🔊 Sound on</button>
+    <button id="calmBtn" type="button">🧘 Calm mode</button>
+  </div>
 
-  const potato = document.getElementById("potato");
-  const answerEl = document.getElementById("answer");
-  const q = document.getElementById("q");
-  const countEl = document.getElementById("count");
-  let count = 0;
-  try { count = +localStorage.getItem("potatoCount") || 0; } catch (e) {}
-  const showCount = () => countEl.textContent = count ? `The potato has answered ${count} question${count === 1 ? "" : "s"}.` : "";
+  <h1>Ask the Potato</h1>
+  <p class="sub">An unhinged but deeply supportive spud. It cares about your feelings. Aggressively.</p>
+
+  <div class="spud-wrap" id="spudWrap" title="Poke the potato">
+    <div class="spud" id="spud" data-face="">
+      <div class="spot s1"></div><div class="spot s2"></div><div class="spot s3"></div>
+      <div class="eye l"><div class="pupil"></div></div>
+      <div class="eye r"><div class="pupil"></div></div>
+      <div class="blush l"></div><div class="blush r"></div>
+      <div class="mouth"></div>
+    </div>
+  </div>
+
+  <div class="bubble" id="bubble" aria-live="polite">Hello, beautiful human. How are we doing today? 🥔💖</div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="mood" aria-selected="true">💭 Check in</button>
+    <button role="tab" data-tab="ask" aria-selected="false">🔮 Ask</button>
+    <button role="tab" data-tab="mash" aria-selected="false">🔨 Worry Masher</button>
+    <button role="tab" data-tab="breathe" aria-selected="false">🫧 Breathe</button>
+    <button role="tab" data-tab="hype" aria-selected="false">📣 Hype me</button>
+  </div>
+
+  <section class="panel" id="mood">
+    <p>How's your brain-weather right now? No wrong answers. The potato does not judge. The potato cannot judge. It's a potato.</p>
+    <div class="moods">
+      <button data-mood="great"><span>🤩</span>Great</button>
+      <button data-mood="meh"><span>😐</span>Meh</button>
+      <button data-mood="sad"><span>😢</span>Sad</button>
+      <button data-mood="anxious"><span>😰</span>Anxious</button>
+      <button data-mood="angry"><span>😤</span>Angry</button>
+      <button data-mood="tired"><span>😴</span>Tired</button>
+      <button data-mood="overwhelmed"><span>🌀</span>Too much</button>
+      <button data-mood="lonely"><span>🫥</span>Lonely</button>
+    </div>
+  </section>
+
+  <section class="panel" id="ask" hidden>
+    <p>Ask the ancient spud a yes or no question. It knows all. It also has opinions about your water intake.</p>
+    <form class="row" id="askForm">
+      <input id="q" placeholder="Will today be okay?" autocomplete="off" aria-label="Your question">
+      <button class="go" type="submit">Ask!</button>
+    </form>
+  </section>
+
+  <section class="panel" id="mash" hidden>
+    <p>Type a worry. Then MASH IT. Naming a worry makes it smaller. Mashing it is just fun.</p>
+    <form class="row" id="mashForm">
+      <input id="worry" placeholder="I'm worried that..." autocomplete="off" aria-label="Your worry">
+      <button class="go" type="submit">MASH 🔨</button>
+    </form>
+    <div class="stage" id="stage"></div>
+  </section>
+
+  <section class="panel" id="breathe" hidden>
+    <p>Box breathing with a potato. Watch it puff up and breathe along. Four rounds, about a minute.</p>
+    <div class="breath-label" id="breathLabel">Ready when you are.</div>
+    <button class="go" id="breathBtn" type="button">Start breathing 🫧</button>
+  </section>
+
+  <section class="panel" id="hypePanel" hidden>
+    <p>Feeling low on self-esteem? The potato has an infinite supply. Warning: compliments may be loud.</p>
+    <button class="go huge" id="hypeBtn" type="button">I NEED A COMPLIMENT 📣</button>
+  </section>
+
+  <div class="count" id="count"></div>
+
+  <footer>
+    🥔 The potato loves you, but it's not a therapist.<br>
+    If you're struggling or don't feel safe, please talk to a real human:
+    <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a> ·
+    US: call or text <a href="tel:988">988</a> ·
+    UK &amp; IE: Samaritans <a href="tel:116123">116 123</a>
+  </footer>
+</main>
+
+<div id="hype" hidden><div id="hypeText"></div></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const spud = $("spud"), wrap = $("spudWrap"), bubble = $("bubble");
+
+  /* ---------- settings ---------- */
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  };
+  let calm = store.get("calm") !== null ? store.get("calm") === "1" : matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let soundOn = store.get("sound") !== "0";
+  function applySettings() {
+    document.body.classList.toggle("calm", calm);
+    $("calmBtn").textContent = calm ? "🎉 Chaos mode" : "🧘 Calm mode";
+    $("soundBtn").textContent = soundOn ? "🔊 Sound on" : "🔇 Sound off";
+  }
+  $("calmBtn").onclick = () => { calm = !calm; store.set("calm", calm ? "1" : "0"); applySettings();
+    say(calm ? "Ahh. Quiet potato mode. Take your time. 🌿" : "CHAOS POTATO HAS RETURNED 🎉🥔🎉"); if (!calm) confetti(40); };
+  $("soundBtn").onclick = () => { soundOn = !soundOn; store.set("sound", soundOn ? "1" : "0"); applySettings(); boop(660); };
+  applySettings();
+
+  /* ---------- counter ---------- */
+  let count = +store.get("spudMoments") || 0;
+  function bump() { count++; store.set("spudMoments", count); showCount(); }
+  function showCount() { $("count").textContent = count ? `You and the potato have shared ${count} spud moment${count === 1 ? "" : "s"}. 💛` : ""; }
   showCount();
 
-  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  /* ---------- sound ---------- */
+  let ac;
+  function boop(freq = 440, dur = .12, type = "square", when = 0) {
+    if (!soundOn) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + when;
+      o.type = type; o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(.05, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur);
+    } catch (e) {}
+  }
+  const fanfare = () => [523, 659, 784, 1047].forEach((f, i) => boop(f, .18, "triangle", i * .09));
+  const sadTrombone = () => [392, 370, 349, 330].forEach((f, i) => boop(f, .3, "sawtooth", i * .25));
+  const crunch = () => { for (let i = 0; i < 6; i++) boop(80 + Math.random() * 200, .08, "sawtooth", i * .04); };
 
-  function rainFries() {
-    for (let i = 0; i < 15; i++) {
-      const f = document.createElement("div");
-      f.className = "fry";
-      f.textContent = pick(["🍟", "🥔", "✨"]);
-      f.style.left = Math.random() * 100 + "vw";
-      f.style.animationDuration = 1.5 + Math.random() * 2 + "s";
-      document.body.appendChild(f);
-      setTimeout(() => f.remove(), 4000);
+  /* ---------- chaos helpers ---------- */
+  function say(text, face) {
+    bubble.textContent = text;
+    bubble.classList.remove("pop"); void bubble.offsetWidth; bubble.classList.add("pop");
+    if (face !== undefined) spud.dataset.face = face;
+  }
+  function animate(cls, ms = 700) {
+    if (calm) return;
+    wrap.classList.remove("spin", "bounce", "wobble"); void wrap.offsetWidth; wrap.classList.add(cls);
+    setTimeout(() => wrap.classList.remove(cls), ms);
+  }
+  function shake() {
+    if (calm) return;
+    document.body.classList.remove("shake"); void document.body.offsetWidth; document.body.classList.add("shake");
+    setTimeout(() => document.body.classList.remove("shake"), 400);
+  }
+  function confetti(n = 60, emojis = ["🥔", "🍟", "✨", "💖", "🌈", "⭐", "🎉", "💛"]) {
+    if (calm) n = Math.min(n, 6);
+    for (let i = 0; i < n; i++) {
+      const c = document.createElement("div");
+      c.className = "confetti";
+      c.textContent = pick(emojis);
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.setProperty("--dx", (Math.random() * 200 - 100) + "px");
+      c.style.setProperty("--rot", (Math.random() * 1440 - 720) + "deg");
+      c.style.animationDuration = (calm ? 4 : 1.5) + Math.random() * 2 + "s";
+      c.style.animationDelay = Math.random() * .4 + "s";
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 6000);
     }
   }
 
-  document.getElementById("form").addEventListener("submit", e => {
-    e.preventDefault();
-    if (!q.value.trim()) { answerEl.textContent = "You have to ASK something, silly."; return; }
-    potato.classList.add("thinking");
-    answerEl.textContent = "Consulting the root vegetables...";
-    setTimeout(() => {
-      potato.classList.remove("thinking");
-      answerEl.textContent = pick(answers);
-      count++;
-      try { localStorage.setItem("potatoCount", count); } catch (e) {}
-      showCount();
-      if (Math.random() < 0.3) rainFries();
-      q.value = "";
-    }, 1200);
+  /* background floaters */
+  for (let i = 0; i < 18; i++) {
+    const f = document.createElement("span");
+    f.className = "floater";
+    f.textContent = pick(["🥔", "💖", "🌈", "✨", "🧠", "🍟", "🌻", "🫶", "⭐"]);
+    f.style.left = Math.random() * 95 + "vw";
+    f.style.top = Math.random() * 95 + "vh";
+    f.style.fontSize = 1 + Math.random() * 2 + "rem";
+    f.style.animationDuration = 4 + Math.random() * 8 + "s";
+    f.style.animationDelay = -Math.random() * 8 + "s";
+    document.body.appendChild(f);
+  }
+
+  /* googly eyes follow you */
+  document.addEventListener("pointermove", e => {
+    document.querySelectorAll(".eye").forEach(eye => {
+      const r = eye.getBoundingClientRect();
+      const a = Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2));
+      eye.firstElementChild.style.transform = `translate(${Math.cos(a) * 10}px, ${Math.sin(a) * 10}px)`;
+    });
   });
 
-  potato.addEventListener("click", () => answerEl.textContent = pick(pokes));
+  /* poke the potato */
+  const pokes = [
+    ["Hey! That tickles! 🤭", "big"], ["Boop received. Boop returned. 👉", "wow"],
+    ["I'm not a stress ball. ...okay fine, squeeze me if it helps.", ""],
+    ["You poked me! That means you're paying attention to the present moment. Mindfulness! 🧘", "big"],
+    ["*happy potato noises*", "big"], ["Ow, my skin. Kidding. Potatoes are very durable. Like you.", "wow"],
+  ];
+  wrap.addEventListener("click", () => {
+    const [t, f] = pick(pokes); say(t, f); animate(pick(["spin", "bounce"])); boop(300 + Math.random() * 500, .1);
+  });
+
+  /* ---------- tabs ---------- */
+  const panels = { mood: "mood", ask: "ask", mash: "mash", breathe: "breathe", hype: "hypePanel" };
+  document.querySelectorAll(".tabs button").forEach(btn => btn.addEventListener("click", () => {
+    document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b === btn));
+    Object.values(panels).forEach(id => $(id).hidden = true);
+    $(panels[btn.dataset.tab]).hidden = false;
+    if (btn.dataset.tab !== "breathe") stopBreath(false, true);
+    boop(500, .06);
+  }));
+
+  /* ---------- mood check-in ---------- */
+  const moods = {
+    great: { face: "big", fx: () => { confetti(90); fanfare(); animate("spin"); }, lines: [
+      "YOU'RE GLOWING! ✨ Quick, write down one thing that made today good so future-you can find it.",
+      "LET'S GOOO 🎉 Pass it on: send someone a nice message while you're feeling sparkly.",
+      "A great day?! The potato is doing cartwheels. Potatoes can't do cartwheels. Watch me anyway." ] },
+    meh: { face: "flat", fx: () => animate("bounce"), lines: [
+      "Meh is valid. Meh is a perfectly good flavor. Tiny upgrade: one glass of water + one song you love. 🎵",
+      "Not every day needs to be a 10. A 5 is still a whole number. Try a 5-minute walk?",
+      "Meh detected. Prescription: stretch like a cat. Right now. Arms up. Good. 🐈" ] },
+    sad: { face: "sad", fx: () => { sadTrombone(); confetti(20, ["💙", "🫂", "🌧️", "🌱"]); }, lines: [
+      "I'm sorry it's heavy right now. 💙 You don't have to fix it this second. Is there someone you could text?",
+      "Sad is allowed. Potatoes grow in the dark and still turn into fries. You're going to be okay. 🌱",
+      "Here's a virtual potato hug. 🫂 Be gentle with yourself today. If it's sticking around, talking to someone helps." ] },
+    anxious: { face: "wow", fx: () => animate("wobble", 1200), lines: [
+      "Anxiety is your brain's smoke alarm going off over toast. 🍞 Let's breathe together in the Breathe tab.",
+      "Try 5-4-3-2-1: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste. 🖐️",
+      "Your thoughts are not facts. They're just very loud guests. Put a worry in the Worry Masher? 🔨" ] },
+    angry: { face: "wow", fx: () => { shake(); crunch(); }, lines: [
+      "BIG FEELINGS! 😤 Squeeze your fists as hard as you can for 5 seconds... and let go. Again!",
+      "Anger is energy. Go stomp around for a minute. Dramatically. The potato will cheer. 📣",
+      "Valid! Now MASH whatever's bugging you in the Worry Masher. Very therapeutic. Very crunchy. 🔨" ] },
+    tired: { face: "flat", fx: () => confetti(15, ["💤", "🔋", "🌙"]), lines: [
+      "You're not lazy, you're a low battery. 🔋 Permission to rest: GRANTED. Signed, The Potato.",
+      "Rest isn't a reward you have to earn. Go lie down like a sack of potatoes. Like me. 😴",
+      "Sleepy check: water? snack? screen break? Pick one. The potato believes in naps." ] },
+    overwhelmed: { face: "wow", fx: () => animate("wobble", 1200), lines: [
+      "Too much at once? Pick ONE tiny thing. Just one. The potato will hold the rest. 🥔🤲",
+      "Breaking news: you don't have to do everything today. Write 3 things down, cross 2 off. 📝",
+      "Overwhelm says 'everything is urgent.' Overwhelm is lying. Breathe first. 🫧" ] },
+    lonely: { face: "sad", fx: () => confetti(25, ["🫶", "💌", "🥔"]), lines: [
+      "Lonely is hard. 🫶 You matter more than you know. Could you send someone a 'thinking of you' text?",
+      "I'm here! I'm a potato, but I'm here. Real humans would be lucky to hear from you too. 💌",
+      "Connection idea: say hi to a neighbor, join a club, or call someone you haven't in a while. Tiny steps count." ] },
+  };
+  document.querySelectorAll("[data-mood]").forEach(b => b.addEventListener("click", () => {
+    const m = moods[b.dataset.mood];
+    say(pick(m.lines), m.face); m.fx(); bump();
+  }));
+
+  /* ---------- ask the potato ---------- */
+  const answers = [
+    "Yes! Also, have you had water today? Drink some. I'll wait. 💧",
+    "The potato says yes, and that you're doing better than you think.",
+    "No. But honestly? That's okay. Rest is productive too.",
+    "Ask again after a snack and a stretch. 🍎",
+    "My many eyes see a YES. And a person who deserves a nap.",
+    "Maybe! Uncertainty is scary, but you've survived 100% of your bad days so far.",
+    "Mashed signals. Try breathing first, then ask again. 🫧",
+    "ABSOLUTELY. Go forth, magnificent bean. 🫘",
+    "Not today, french fry. Tomorrow is a fresh batch.",
+    "The soil whispers... be gentle with yourself either way. 🌱",
+    "SPUDTACULARLY YES! Celebrate with a tiny dance. 💃",
+    "I'm just a potato, but I believe in you. Unreasonably.",
+    "Signs point to: text a friend you like. 📱",
+    "Yes, but go outside for five minutes first. Sun is free. ☀️",
+    "The answer matters less than you do. Wow. That was deep for a potato.",
+  ];
+  $("askForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const q = $("q");
+    if (!q.value.trim()) { say("You have to ASK something, silly goose. 🪿", "wow"); return; }
+    say("Consulting the root vegetables... 🔮", "wow");
+    wrap.classList.add("wobble");
+    [200, 260, 330, 400].forEach((f, i) => boop(f, .1, "sine", i * .25));
+    setTimeout(() => {
+      wrap.classList.remove("wobble");
+      say(pick(answers), "big"); bump();
+      if (Math.random() < .4) confetti(50);
+      q.value = "";
+    }, 1300);
+  });
+
+  /* ---------- worry masher ---------- */
+  const mashed = [
+    "Worry MASHED. It's mashed potatoes now. Soft. Harmless. Maybe add gravy. 🥣",
+    "BONK. 🔨 That worry is smaller now. It might come back, but now you know you can name it.",
+    "Mashed! Ask yourself: will this matter in 5 years? 5 months? 5 days? 🤔",
+    "CRUNCH. Worries hate being written down. Now: what's ONE small thing you can do about it?",
+    "Pulverized. 💥 If this one keeps coming back, it's worth talking to someone you trust about it.",
+  ];
+  $("mashForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const w = $("worry"), stage = $("stage");
+    const text = w.value.trim();
+    if (!text) { say("Type a worry first! The hammer is hungry. 🔨", "wow"); return; }
+    stage.innerHTML = "";
+    const spans = [...text].map(ch => { const s = document.createElement("span"); s.textContent = ch; stage.appendChild(s); return s; });
+    w.value = "";
+    setTimeout(() => {
+      spans.forEach(s => {
+        s.style.transform = `translate(${Math.random() * 400 - 200}px, ${Math.random() * 300 - 100}px) rotate(${Math.random() * 720 - 360}deg) scale(${Math.random() * 1.5})`;
+        s.style.opacity = 0;
+      });
+      shake(); crunch(); animate("bounce");
+      confetti(30, ["🥔", "💥", "🍟", "🔨"]);
+      say(pick(mashed), "big"); bump();
+    }, 400);
+    setTimeout(() => stage.innerHTML = "", 1700);
+  });
+
+  /* ---------- breathing ---------- */
+  const phases = [["Breathe in...", 1.35], ["Hold...", 1.35], ["Breathe out...", 1], ["Hold...", 1]];
+  let breathTimer = null;
+  function startBreath() {
+    stopBreath(false, true);
+    let p = 0, sec = 4, round = 0;
+    $("breathBtn").textContent = "Stop";
+    say("Breathe with me. In through the nose, out through the mouth. 🫧", "");
+    const tick = () => {
+      const [label, scale] = phases[p];
+      if (sec === 4) { spud.style.transform = `scale(${scale})`; boop(p === 0 ? 392 : p === 2 ? 330 : 360, .25, "sine"); }
+      $("breathLabel").textContent = `${label} ${sec}`;
+      sec--;
+      if (sec === 0) {
+        sec = 4; p = (p + 1) % 4;
+        if (p === 0 && ++round === 4) { clearInterval(breathTimer); breathTimer = null; setTimeout(() => stopBreath(true), 1000); }
+      }
+    };
+    tick(); breathTimer = setInterval(tick, 1000);
+  }
+  function stopBreath(done, silent) {
+    const wasRunning = breathTimer !== null;
+    clearInterval(breathTimer); breathTimer = null;
+    spud.style.transform = "";
+    $("breathBtn").textContent = done ? "Go again 🫧" : "Start breathing 🫧";
+    if (done) {
+      $("breathLabel").textContent = "All done. 💛";
+      say("Nice. Your nervous system says thank you. So does the potato. 🥔💛", "big");
+      confetti(30, ["🫧", "💛", "🌿"]); bump();
+    } else if (!silent || wasRunning) {
+      $("breathLabel").textContent = "Paused. Come back anytime.";
+    }
+  }
+  $("breathBtn").addEventListener("click", () => breathTimer ? stopBreath(false) : startBreath());
+
+  /* ---------- hype ---------- */
+  const compliments = [
+    "YOUR VIBE COULD POWER A SMALL CITY ⚡",
+    "You are the human equivalent of a perfectly crispy fry 🍟",
+    "Someone smiles when they think of you. Probably LOTS of someones.",
+    "You're doing a hard thing (being a person) and you're DOING IT.",
+    "Your brain is weird in the BEST way 🧠✨",
+    "If you were a vegetable you'd be a CUTE-cumber. I'm a potato. I'm allowed.",
+    "You've survived every bad day so far. UNDEFEATED. 🏆",
+    "Rest is not a reward. You deserve it ANYWAY.",
+    "The world is better with you in it. That's not a compliment, it's a FACT.",
+    "You are allowed to take up space. ALL THE SPACE. 🌌",
+    "Your feelings are valid AND you have great taste in potatoes.",
+    "You asked for help just now. That's BRAVE. 🦁",
+  ];
+  const overlay = $("hype");
+  $("hypeBtn").addEventListener("click", () => {
+    const c = pick(compliments);
+    $("hypeText").textContent = c;
+    overlay.hidden = false;
+    $("hypeText").style.animation = "none"; void $("hypeText").offsetWidth; $("hypeText").style.animation = "";
+    confetti(120); shake(); fanfare(); animate("spin");
+    say("Tap anywhere to close. Or bask. Basking is allowed. 😎", "big"); bump();
+    clearTimeout(overlay.t); overlay.t = setTimeout(() => overlay.hidden = true, 4000);
+  });
+  overlay.addEventListener("click", () => overlay.hidden = true);
 </script>
 </body>
 </html>
