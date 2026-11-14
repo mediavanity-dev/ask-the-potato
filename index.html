@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ff9ac0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Ask the Potato</title>
 <meta name="description" content="A completely unhinged, extremely supportive potato that cares about your mental health.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥔</text></svg>">
@@ -29,10 +32,14 @@
     --bg: linear-gradient(120deg, #4a1c4a, #1c2a5a, #13404a, #3a3a12, #5a1c3a);
     --calm-bg: #1b2421;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  button, input { touch-action: manipulation; }
   html, body { overflow-x: hidden; }
+  /* mobile-first: base styles target phones; wider screens enhance below */
   body {
-    margin: 0; min-height: 100vh; padding: 16px;
+    margin: 0; min-height: 100vh; min-height: 100dvh;
+    padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+             calc(96px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
     color: var(--ink);
     font-family: "Comic Sans MS", "Chalkboard SE", "Comic Neue", system-ui, sans-serif;
     background: var(--bg); background-size: 400% 400%;
@@ -40,7 +47,8 @@
   }
   body.calm { animation: none; background: var(--calm-bg); }
   @keyframes bg { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-  body.shake { animation: bg 12s ease infinite, shake .4s; }
+  /* shake content only, so the fixed bottom nav stays put */
+  body.shake main > :not(.tabs) { animation: shake .4s; }
   @keyframes shake {
     20% { transform: translate(-8px, 4px) rotate(-1deg); } 40% { transform: translate(8px, -4px) rotate(1deg); }
     60% { transform: translate(-6px, -2px); } 80% { transform: translate(6px, 2px); }
@@ -54,22 +62,24 @@
   main { position: relative; z-index: 1; width: 100%; max-width: 560px; margin: 0 auto; text-align: center; }
   .toolbar { display: flex; justify-content: flex-end; gap: 8px; }
   .toolbar button {
-    font: inherit; font-size: .85rem; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    font: inherit; font-size: 1.2rem; min-width: 44px; min-height: 44px; padding: 6px 10px;
+    border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     border: 2px solid var(--line); background: var(--card); color: var(--ink);
   }
+  .toolbar .lbl { display: none; font-size: .85rem; }
   h1 {
-    font-size: clamp(2.2rem, 9vw, 3.4rem); margin: 8px 0 0; line-height: 1;
+    font-size: clamp(2rem, 11vw, 3.4rem); margin: 0; line-height: 1;
     background: linear-gradient(90deg, #ff3d9a, #ff9a3d, #ffd23d, #3dd68c, #3d9aff, #9a3dff, #ff3d9a);
     background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
     animation: rainbow 3s linear infinite; transform: rotate(-2deg);
   }
   body.calm h1 { animation: none; }
   @keyframes rainbow { to { background-position: 200% center; } }
-  .sub { color: var(--muted); margin: 8px 0 12px; }
+  .sub { color: var(--muted); margin: 6px 0 4px; font-size: .9rem; }
 
-  /* the spud */
-  .spud-wrap { display: inline-block; margin: 10px 0 0; cursor: pointer; transition: transform .2s; }
-  .spud-wrap:hover { transform: rotate(-6deg) scale(1.04); }
+  /* the spud (shrunk on phones to save vertical space) */
+  .spud-wrap { display: inline-block; margin: 6px 0 0; cursor: pointer; transition: transform .2s; zoom: .72; }
+  @media (hover: hover) { .spud-wrap:hover { transform: rotate(-6deg) scale(1.04); } }
   .spud-wrap.spin { animation: spin .7s ease; }
   .spud-wrap.bounce { animation: bounce .6s ease; }
   .spud-wrap.wobble { animation: wobble .15s infinite alternate; }
@@ -102,7 +112,8 @@
 
   .bubble {
     position: relative; background: var(--card); border: 3px solid var(--line); border-radius: 22px;
-    padding: 14px 18px; margin: 18px 0 14px; min-height: 64px; font-size: 1.15rem;
+    padding: 12px 14px; margin: 14px 0 12px; min-height: 64px; font-size: 1.05rem; line-height: 1.35;
+    scroll-margin: 12px;
     display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 0 var(--line);
   }
   .bubble::before {
@@ -112,19 +123,26 @@
   .bubble.pop { animation: pop .35s ease; }
   @keyframes pop { 50% { transform: scale(1.06) rotate(-1deg); } }
 
-  /* tabs */
-  .tabs { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; }
-  .tabs button {
-    font: inherit; font-size: .95rem; padding: 8px 12px; border-radius: 14px; cursor: pointer;
-    border: 3px solid var(--line); background: var(--card); color: var(--ink);
+  /* tabs: thumb-friendly bottom nav on phones */
+  .tabs {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
+    padding: 6px max(6px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+    background: var(--card); border-top: 3px solid var(--line);
   }
-  .tabs button[aria-selected="true"] { background: var(--accent2); color: #fff; transform: rotate(-3deg) scale(1.05); }
-  .panel { background: var(--card); border: 3px solid var(--line); border-radius: 22px; padding: 16px; box-shadow: 0 5px 0 var(--line); }
+  .tabs button {
+    font: inherit; font-size: .72rem; min-height: 58px; padding: 4px 2px; border-radius: 14px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    border: 0; background: transparent; color: var(--ink); transition: transform .15s;
+  }
+  .tabs button .ico { font-size: 1.5rem; line-height: 1; }
+  .tabs button[aria-selected="true"] { background: var(--accent2); color: #fff; transform: translateY(-6px) rotate(-3deg); }
+  .panel { background: var(--card); border: 3px solid var(--line); border-radius: 22px; padding: 14px; box-shadow: 0 5px 0 var(--line); }
   .panel[hidden] { display: none; }
   .panel p { margin: 0 0 12px; color: var(--muted); }
   .row { display: flex; gap: 8px; }
   input {
-    flex: 1; min-width: 0; padding: 12px 14px; font: inherit; font-size: 1rem;
+    flex: 1; min-width: 0; min-height: 48px; padding: 12px 14px; font: inherit; font-size: 16px; /* 16px stops iOS zoom */
     border: 3px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink);
   }
   .go {
@@ -134,13 +152,15 @@
   }
   .go:active { transform: translateY(4px); box-shadow: none; }
   .go.huge { width: 100%; font-size: 1.4rem; padding: 18px; background: linear-gradient(90deg, #ff3d9a, #ff9a3d, #7b5cff); }
-  .moods { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+  .moods { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
   .moods button {
-    font: inherit; padding: 10px 4px; border-radius: 14px; cursor: pointer;
-    border: 3px solid var(--line); background: var(--card); color: var(--ink); font-size: .85rem;
+    font: inherit; min-height: 64px; padding: 6px 2px; border-radius: 14px; cursor: pointer;
+    border: 3px solid var(--line); background: var(--card); color: var(--ink); font-size: .75rem;
+    transition: transform .15s;
   }
-  .moods button span { display: block; font-size: 2rem; }
-  .moods button:hover { transform: scale(1.08) rotate(3deg); }
+  .moods button span { display: block; font-size: 1.7rem; }
+  .moods button:active { transform: scale(.92) rotate(-3deg); }
+  @media (hover: hover) { .moods button:hover { transform: scale(1.08) rotate(3deg); } }
   .stage { min-height: 2em; margin-top: 12px; font-size: 1.3rem; font-weight: bold; word-break: break-word; }
   .stage span { display: inline-block; transition: transform 1.1s cubic-bezier(.2,.8,.3,1), opacity 1.1s; white-space: pre; }
   .breath-label { font-size: 1.4rem; font-weight: bold; margin-bottom: 12px; min-height: 1.5em; color: var(--ink) !important; }
@@ -164,17 +184,43 @@
 
   body.calm .spud-wrap, body.calm .spud-wrap:hover { animation: none !important; transform: none; }
   body.calm .tabs button[aria-selected="true"] { transform: none; }
+
+  /* ---------- enhancements for bigger screens ---------- */
+  @media (min-width: 420px) {
+    .tabs button { font-size: .8rem; }
+    .moods button { font-size: .85rem; }
+    .moods button span { font-size: 2rem; }
+  }
+  @media (min-width: 720px) {
+    body { padding: 16px 16px 24px; }
+    .toolbar .lbl { display: inline; }
+    .toolbar button { font-size: 1rem; padding: 6px 14px; }
+    .sub { font-size: 1rem; margin: 8px 0 12px; }
+    .spud-wrap { zoom: 1; margin-top: 10px; }
+    .bubble { font-size: 1.15rem; padding: 14px 18px; margin: 18px 0 14px; }
+    .tabs {
+      position: static; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
+      padding: 0; margin-bottom: 12px; background: none; border: 0;
+    }
+    .tabs button {
+      flex-direction: row; gap: 6px; min-height: 44px; font-size: .95rem; padding: 8px 12px;
+      border: 3px solid var(--line); background: var(--card);
+    }
+    .tabs button .ico { font-size: 1.1rem; }
+    .tabs button[aria-selected="true"] { transform: rotate(-3deg) scale(1.05); }
+    .panel { padding: 16px; }
+  }
 </style>
 </head>
 <body>
 <main>
   <div class="toolbar">
-    <button id="soundBtn" type="button">🔊 Sound on</button>
-    <button id="calmBtn" type="button">🧘 Calm mode</button>
+    <button id="soundBtn" type="button"><span class="ico"></span><span class="lbl"></span></button>
+    <button id="calmBtn" type="button"><span class="ico"></span><span class="lbl"></span></button>
   </div>
 
   <h1>Ask the Potato</h1>
-  <p class="sub">An unhinged but deeply supportive spud. It cares about your feelings. Aggressively.</p>
+  <p class="sub">An unhinged, deeply supportive spud. It cares about your feelings. Aggressively.</p>
 
   <div class="spud-wrap" id="spudWrap" title="Poke the potato">
     <div class="spud" id="spud" data-face="">
@@ -188,13 +234,13 @@
 
   <div class="bubble" id="bubble" aria-live="polite">Hello, beautiful human. How are we doing today? 🥔💖</div>
 
-  <div class="tabs" role="tablist">
-    <button role="tab" data-tab="mood" aria-selected="true">💭 Check in</button>
-    <button role="tab" data-tab="ask" aria-selected="false">🔮 Ask</button>
-    <button role="tab" data-tab="mash" aria-selected="false">🔨 Worry Masher</button>
-    <button role="tab" data-tab="breathe" aria-selected="false">🫧 Breathe</button>
-    <button role="tab" data-tab="hype" aria-selected="false">📣 Hype me</button>
-  </div>
+  <nav class="tabs" role="tablist" aria-label="Potato tools">
+    <button role="tab" data-tab="mood" aria-selected="true"><span class="ico">💭</span>Check in</button>
+    <button role="tab" data-tab="ask" aria-selected="false"><span class="ico">🔮</span>Ask</button>
+    <button role="tab" data-tab="mash" aria-selected="false"><span class="ico">🔨</span>Mash</button>
+    <button role="tab" data-tab="breathe" aria-selected="false"><span class="ico">🫧</span>Breathe</button>
+    <button role="tab" data-tab="hype" aria-selected="false"><span class="ico">📣</span>Hype</button>
+  </nav>
 
   <section class="panel" id="mood">
     <p>How's your brain-weather right now? No wrong answers. The potato does not judge. The potato cannot judge. It's a potato.</p>
@@ -265,8 +311,13 @@
   let soundOn = store.get("sound") !== "0";
   function applySettings() {
     document.body.classList.toggle("calm", calm);
-    $("calmBtn").textContent = calm ? "🎉 Chaos mode" : "🧘 Calm mode";
-    $("soundBtn").textContent = soundOn ? "🔊 Sound on" : "🔇 Sound off";
+    const setBtn = (id, ico, lbl) => {
+      $(id).querySelector(".ico").textContent = ico;
+      $(id).querySelector(".lbl").textContent = lbl;
+      $(id).setAttribute("aria-label", lbl);
+    };
+    setBtn("calmBtn", calm ? "🎉" : "🧘", calm ? "Chaos mode" : "Calm mode");
+    setBtn("soundBtn", soundOn ? "🔊" : "🔇", soundOn ? "Sound on" : "Sound off");
   }
   $("calmBtn").onclick = () => { calm = !calm; store.set("calm", calm ? "1" : "0"); applySettings();
     say(calm ? "Ahh. Quiet potato mode. Take your time. 🌿" : "CHAOS POTATO HAS RETURNED 🎉🥔🎉"); if (!calm) confetti(40); };
@@ -300,7 +351,15 @@
     bubble.textContent = text;
     bubble.classList.remove("pop"); void bubble.offsetWidth; bubble.classList.add("pop");
     if (face !== undefined) spud.dataset.face = face;
+    // on small screens, make sure the potato's reply is visible
+    const r = bubble.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > innerHeight - 90) bubble.scrollIntoView({ block: "nearest", behavior: calm ? "auto" : "smooth" });
   }
+  function buzz(pattern) {
+    if (calm || !navigator.vibrate) return;
+    try { navigator.vibrate(pattern); } catch (e) {}
+  }
+  const small = () => innerWidth < 720;
   function animate(cls, ms = 700) {
     if (calm) return;
     wrap.classList.remove("spin", "bounce", "wobble"); void wrap.offsetWidth; wrap.classList.add(cls);
@@ -310,8 +369,10 @@
     if (calm) return;
     document.body.classList.remove("shake"); void document.body.offsetWidth; document.body.classList.add("shake");
     setTimeout(() => document.body.classList.remove("shake"), 400);
+    buzz([60, 40, 80]);
   }
   function confetti(n = 60, emojis = ["🥔", "🍟", "✨", "💖", "🌈", "⭐", "🎉", "💛"]) {
+    if (small()) n = Math.ceil(n * .6); // lighter on phones
     if (calm) n = Math.min(n, 6);
     for (let i = 0; i < n; i++) {
       const c = document.createElement("div");
@@ -328,7 +389,7 @@
   }
 
   /* background floaters */
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < (small() ? 10 : 18); i++) {
     const f = document.createElement("span");
     f.className = "floater";
     f.textContent = pick(["🥔", "💖", "🌈", "✨", "🧠", "🍟", "🌻", "🫶", "⭐"]);
@@ -340,14 +401,16 @@
     document.body.appendChild(f);
   }
 
-  /* googly eyes follow you */
-  document.addEventListener("pointermove", e => {
+  /* googly eyes follow your cursor, or your finger on touch screens */
+  function lookAt(e) {
     document.querySelectorAll(".eye").forEach(eye => {
       const r = eye.getBoundingClientRect();
       const a = Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2));
       eye.firstElementChild.style.transform = `translate(${Math.cos(a) * 10}px, ${Math.sin(a) * 10}px)`;
     });
-  });
+  }
+  document.addEventListener("pointermove", lookAt);
+  document.addEventListener("pointerdown", lookAt);
 
   /* poke the potato */
   const pokes = [
@@ -357,7 +420,7 @@
     ["*happy potato noises*", "big"], ["Ow, my skin. Kidding. Potatoes are very durable. Like you.", "wow"],
   ];
   wrap.addEventListener("click", () => {
-    const [t, f] = pick(pokes); say(t, f); animate(pick(["spin", "bounce"])); boop(300 + Math.random() * 500, .1);
+    const [t, f] = pick(pokes); say(t, f); animate(pick(["spin", "bounce"])); boop(300 + Math.random() * 500, .1); buzz(30);
   });
 
   /* ---------- tabs ---------- */
@@ -367,7 +430,7 @@
     Object.values(panels).forEach(id => $(id).hidden = true);
     $(panels[btn.dataset.tab]).hidden = false;
     if (btn.dataset.tab !== "breathe") stopBreath(false, true);
-    boop(500, .06);
+    boop(500, .06); buzz(10);
   }));
 
   /* ---------- mood check-in ---------- */
@@ -479,9 +542,10 @@
     let p = 0, sec = 4, round = 0;
     $("breathBtn").textContent = "Stop";
     say("Breathe with me. In through the nose, out through the mouth. 🫧", "");
+    wrap.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" }); // keep the potato in view
     const tick = () => {
       const [label, scale] = phases[p];
-      if (sec === 4) { spud.style.transform = `scale(${scale})`; boop(p === 0 ? 392 : p === 2 ? 330 : 360, .25, "sine"); }
+      if (sec === 4) { spud.style.transform = `scale(${scale})`; boop(p === 0 ? 392 : p === 2 ? 330 : 360, .25, "sine"); buzz(20); }
       $("breathLabel").textContent = `${label} ${sec}`;
       sec--;
       if (sec === 0) {

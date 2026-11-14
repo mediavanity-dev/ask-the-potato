@@ -15,7 +15,11 @@ https://mediavanity-dev.github.io/ask-the-potato/
 - **📣 Hype me.** Fires a full-screen compliment with confetti.
 - **🧘 Calm mode.** One click turns off all the chaos (it's on by default if your device prefers reduced motion). Sound can be muted too.
 
-The potato's googly eyes follow your cursor. You can poke the potato.
+The potato's googly eyes follow your cursor (or your finger). You can poke the potato.
+
+## 📱 Mobile-first
+
+Built for phones first: a thumb-friendly bottom tab bar, large tap targets, support for notches and home bars, no iOS zoom when you tap an input, and small vibrations on supported phones. On bigger screens the layout expands.
 
 ## Important
 
