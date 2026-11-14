@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask the Potato</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥔</text></svg>">
+<style>
+  :root {
+    --bg: #fff6e0;
+    --ink: #3b2a1a;
+    --accent: #e0662b;
+    --card: #ffffff;
+    --muted: #8a7560;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1f1812; --ink: #f6e7d2; --accent: #ff8a4c; --card: #2c2219; --muted: #b8a088; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: var(--bg); color: var(--ink);
+    font-family: "Comic Sans MS", "Chalkboard SE", "Comic Neue", system-ui, sans-serif;
+    padding: 16px; overflow-x: hidden;
+  }
+  main { width: 100%; max-width: 480px; text-align: center; }
+  h1 { font-size: 2.2rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  #potato {
+    font-size: 8rem; line-height: 1; cursor: pointer; user-select: none;
+    display: inline-block; transition: transform .2s;
+    background: none; border: 0; padding: 0;
+  }
+  #potato:hover { transform: rotate(-8deg) scale(1.05); }
+  .thinking { animation: wobble .15s infinite alternate; }
+  @keyframes wobble { from { transform: rotate(-15deg); } to { transform: rotate(15deg) scale(1.1); } }
+  .bubble {
+    background: var(--card); border-radius: 20px; padding: 16px 20px; margin: 16px 0;
+    min-height: 60px; font-size: 1.25rem; box-shadow: 0 4px 0 rgba(0,0,0,.12);
+    display: flex; align-items: center; justify-content: center;
+  }
+  form { display: flex; gap: 8px; }
+  input {
+    flex: 1; min-width: 0; padding: 12px 14px; font: inherit; font-size: 1rem;
+    border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink);
+  }
+  button.ask {
+    padding: 12px 18px; font: inherit; font-weight: bold; font-size: 1rem;
+    border: 3px solid var(--ink); border-radius: 14px; background: var(--accent); color: #fff;
+    cursor: pointer; box-shadow: 0 4px 0 var(--ink);
+  }
+  button.ask:active { transform: translateY(4px); box-shadow: none; }
+  .count { color: var(--muted); font-size: .9rem; margin-top: 20px; }
+  .fry { position: fixed; top: -40px; font-size: 2rem; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ask the Potato</h1>
+  <p class="sub">The ancient spud knows all. Ask it a yes or no question.</p>
+  <button id="potato" aria-label="Poke the potato">🥔</button>
+  <div class="bubble" id="answer">...</div>
+  <form id="form">
+    <input id="q" placeholder="Will I have a good day?" autocomplete="off" aria-label="Your question">
+    <button class="ask" type="submit">Ask!</button>
+  </form>
+  <p class="count" id="count"></p>
+</main>
+<script>
+  const answers = [
+    "Yes, but only on Tuesdays.",
+    "The potato says... absolutely.",
+    "No. The potato has spoken.",
+    "Ask again after a snack.",
+    "My eyes see a YES. I have many eyes.",
+    "Hmm. That's a tater-tot level question. Maybe.",
+    "Mashed signals. Try again.",
+    "Definitely! Go forth, little bean.",
+    "Not a chance, french fry.",
+    "The soil whispers... it depends.",
+    "Spudtacularly yes!",
+    "I'm just a potato. But also: no.",
+    "Signs point to curly fries.",
+    "Only if you do a little dance first.",
+    "Yes, and you should tell a duck about it.",
+    "The answer is hidden in a baked potato. Go look.",
+  ];
+  const pokes = ["Hey!", "Ow, my skin!", "I'm not a stress ball.", "Stop that, I'm sprouting.", "Rude.", "*potato noises*"];
+
+  const potato = document.getElementById("potato");
+  const answerEl = document.getElementById("answer");
+  const q = document.getElementById("q");
+  const countEl = document.getElementById("count");
+  let count = 0;
+  try { count = +localStorage.getItem("potatoCount") || 0; } catch (e) {}
+  const showCount = () => countEl.textContent = count ? `The potato has answered ${count} question${count === 1 ? "" : "s"}.` : "";
+  showCount();
+
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  function rainFries() {
+    for (let i = 0; i < 15; i++) {
+      const f = document.createElement("div");
+      f.className = "fry";
+      f.textContent = pick(["🍟", "🥔", "✨"]);
+      f.style.left = Math.random() * 100 + "vw";
+      f.style.animationDuration = 1.5 + Math.random() * 2 + "s";
+      document.body.appendChild(f);
+      setTimeout(() => f.remove(), 4000);
+    }
+  }
+
+  document.getElementById("form").addEventListener("submit", e => {
+    e.preventDefault();
+    if (!q.value.trim()) { answerEl.textContent = "You have to ASK something, silly."; return; }
+    potato.classList.add("thinking");
+    answerEl.textContent = "Consulting the root vegetables...";
+    setTimeout(() => {
+      potato.classList.remove("thinking");
+      answerEl.textContent = pick(answers);
+      count++;
+      try { localStorage.setItem("potatoCount", count); } catch (e) {}
+      showCount();
+      if (Math.random() < 0.3) rainFries();
+      q.value = "";
+    }, 1200);
+  });
+
+  potato.addEventListener("click", () => answerEl.textContent = pick(pokes));
+</script>
+</body>
+</html>
